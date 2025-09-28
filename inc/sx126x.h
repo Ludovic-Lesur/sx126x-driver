@@ -16,7 +16,15 @@
 
 /*** SX126X macros ***/
 
+#define SX126X_EXIT_RESET_DELAY_MS              50
+#define SX126X_CALIBRATION_DELAY_MS             4
+
 #define SX126X_SYNC_WORD_MAXIMUM_SIZE_BYTES     8
+
+#define SX126X_RAMP_UP_DELAY_DBPSK_100BPS       0x370F
+#define SX126X_RAMP_UP_DELAY_DBPSK_600BPS       0x092F
+#define SX126X_RAMP_DOWN_DELAY_DBPSK_100BPS     0x1D70
+#define SX126X_RAMP_DOWN_DELAY_DBPSK_600BPS     0x04E1
 
 /*** SX126X structures ***/
 
@@ -28,6 +36,12 @@ typedef enum {
     // Driver errors.
     SX126X_SUCCESS = 0,
     SX126X_ERROR_NULL_PARAMETER,
+    SX126X_ERROR_BUSY_TIMEOUT,
+    SX126X_ERROR_REGULATION_MODE,
+    SX126X_ERROR_OSCILLATOR,
+    SX126X_ERROR_TCXO_VOLTAGE,
+    SX126X_ERROR_TCXO_TIMEOUT,
+    SX126X_ERROR_CALIBRATION_TIMEOUT,
     SX126X_ERROR_MODE,
     SX126X_ERROR_RF_FREQUENCY_OVERFLOW,
     SX126X_ERROR_RF_FREQUENCY_UNDERFLOW,
@@ -39,13 +53,13 @@ typedef enum {
     SX126X_ERROR_RX_BANDWIDTH,
     SX126X_ERROR_PREAMBLE_DETECTOR_LENGTH,
     SX126X_ERROR_SYNC_WORD_LENGTH,
-    SX126X_ERROR_PAYLOAD_LENGTH,
     SX126X_ERROR_IRQ_INDEX,
     SX126X_ERROR_RF_OUTPUT_POWER_OVERFLOW,
     SX126X_ERROR_RF_OUTPUT_POWER_UNDERFLOW,
     SX126X_ERROR_PA_RAMP_TIME,
     SX126X_ERROR_LNA_MODE,
     SX126X_ERROR_RSSI_TYPE,
+    SX126X_ERROR_RX_PAYLOAD_SIZE,
     // Low level drivers errors.
     SX126X_ERROR_BASE_SPI = ERROR_BASE_STEP,
     SX126X_ERROR_BASE_DELAY = (SX126X_ERROR_BASE_SPI + SX126X_DRIVER_SPI_ERROR_BASE_LAST),
@@ -56,14 +70,40 @@ typedef enum {
 #ifndef SX126X_DRIVER_DISABLE
 
 /*!******************************************************************
- * \enum SX126X_oscillator_t
- * \brief SX126X oscillator types.
+ * \enum SX126X_regulation_mode_t
+ * \brief SX126X power regulation modes.
  *******************************************************************/
 typedef enum {
-    SX126X_OSCILLATOR_QUARTZ,
+    SX126X_REGULATION_MODE_LDO = 0,
+    SX126X_REGULATION_MODE_DCDC,
+    SX126X_REGULATION_MODE_LAST
+} SX126X_regulation_mode_t;
+
+/*!******************************************************************
+ * \enum SX126X_oscillator_t
+ * \brief SX126X external oscillator type.
+ *******************************************************************/
+typedef enum {
+    SX126X_OSCILLATOR_QUARTZ = 0x00,
     SX126X_OSCILLATOR_TCXO,
     SX126X_OSCILLATOR_LAST
 } SX126X_oscillator_t;
+
+/*!******************************************************************
+ * \enum SX126X_tcxo_voltage_t
+ * \brief SX126X TCXO control voltages list.
+ *******************************************************************/
+typedef enum {
+    SX126X_TCXO_VOLTAGE_1V6 = 0,
+    SX126X_TCXO_VOLTAGE_1V7,
+    SX126X_TCXO_VOLTAGE_1V8,
+    SX126X_TCXO_VOLTAGE_2V2,
+    SX126X_TCXO_VOLTAGE_2V4,
+    SX126X_TCXO_VOLTAGE_2V7,
+    SX126X_TCXO_VOLTAGE_3V0,
+    SX126X_TCXO_VOLTAGE_3V3,
+    SX126X_TCXO_VOLTAGE_LAST
+} SX126X_tcxo_voltage_t;
 
 /*!******************************************************************
  * \enum SX126X_mode_t
@@ -75,6 +115,7 @@ typedef enum {
     SX126X_MODE_STANDBY_XOSC,
     SX126X_MODE_FS,
     SX126X_MODE_TX,
+    SX126X_MODE_TX_CW,
     SX126X_MODE_RX,
     SX126X_MODE_LAST
 } SX126X_mode_t;
@@ -99,6 +140,7 @@ typedef enum {
     SX126X_MODULATION_SHAPING_GAUSSIAN_BT_05,
     SX126X_MODULATION_SHAPING_GAUSSIAN_BT_07,
     SX126X_MODULATION_SHAPING_GAUSSIAN_BT_1,
+    SX126X_MODULATION_SHAPING_DBPSK,
     SX126X_MODULATION_SHAPING_LAST
 } SX126X_modulation_shaping_t;
 
@@ -255,6 +297,63 @@ SX126X_status_t SX126X_init(void);
 SX126X_status_t SX126X_de_init(void);
 
 /*!******************************************************************
+ * \fn SX126X_status_t SX126X_reset(uint8_t reset_enable)
+ * \brief Control SX126X NRESET pin.
+ * \param[in]   reset_enable: 0 to release chip, any other value to reset.
+ * \param[out]  none
+ * \retval      Function execution status.
+ *******************************************************************/
+SX126X_status_t SX126X_reset(uint8_t reset_enable);
+
+/*!******************************************************************
+ * \fn SX126X_status_t SX126X_get_device_errors(uint16_t* op_error)
+ * \brief Read SX126X internal errors.
+ * \param[in]   none
+ * \param[out]  op_error: Pointer to the errors bitfield.
+ * \retval      Function execution status.
+ *******************************************************************/
+SX126X_status_t SX126X_get_device_errors(uint16_t* op_error);
+
+/*!******************************************************************
+ * \fn SX126X_status_t SX126X_clear_device_errors(void)
+ * \brief Clear SX126X internal errors.
+ * \param[in]   none
+ * \param[out]  none
+ * \retval      Function execution status.
+ *******************************************************************/
+SX126X_status_t SX126X_clear_device_errors(void);
+
+/*!******************************************************************
+ * \fn SX126X_status_t SX126X_set_regulation_mode(SX126X_regulation_mode_t regulation_mode)
+ * \brief Set SX126X regulation mode.
+ * \param[in]   regulation_mode: Power regulation mode to select.
+ * \param[out]  none
+ * \retval      Function execution status.
+ *******************************************************************/
+SX126X_status_t SX126X_set_regulation_mode(SX126X_regulation_mode_t regulation_mode);
+
+/*!******************************************************************
+ * \fn SX126X_status_t SX126X_set_oscillator(SX126X_oscillator_t oscillator, SX126X_tcxo_voltage_t tcxo_voltage, uint32_t tcxo_timeout_ms)
+ * \brief Set SX126X oscillator type.
+ * \param[in]   oscillator: Oscillator type.
+ * \param[in]   tcxo_voltage: TCXO control voltage on DIO3.
+ * \param[in]   tcxo_timeout_ms: TCXO startup timeout in ms.
+ * \param[out]  none
+ * \retval      Function execution status.
+ *******************************************************************/
+SX126X_status_t SX126X_set_oscillator(SX126X_oscillator_t oscillator, SX126X_tcxo_voltage_t tcxo_voltage, uint32_t tcxo_timeout_ms);
+
+/*!******************************************************************
+ * \fn SX126X_status_t SX126X_calibrate(uint16_t frequency_range_low_mhz, uint16_t frequency_range_high_mhz)
+ * \brief Calibrate all SX126X internal blocks.
+ * \param[in]   frequency_range_low_mhz: Minimum frequency of the operating band in MHz.
+ * \param[in]   frequency_range_high_mhz: Maximum frequency of the operating band in MHz
+ * \param[out]  none
+ * \retval      Function execution status.
+ *******************************************************************/
+SX126X_status_t SX126X_calibrate(uint16_t frequency_range_low_mhz, uint16_t frequency_range_high_mhz);
+
+/*!******************************************************************
  * \fn SX126X_status_t SX126X_set_mode(SX126X_mode_t mode)
  * \brief Set SX126X state.
  * \param[in]   mode: New mode to switch to.
@@ -334,16 +433,16 @@ SX126X_status_t SX126X_set_rf_output_power(int8_t rf_output_power_dbm, SX126X_pa
 
 #ifdef SX126X_DRIVER_TX_ENABLE
 /*!******************************************************************
- * \fn SX126X_status_t SX126X_differential_encoding(uint8_t* data_in, uint16_t data_in_size_bits, uint8_t* data_out, uint8_t* data_out_size_bytes, uint16_t* data_out_size_bits)
+ * \fn SX126X_status_t SX126X_differential_encoding(uint8_t* data_in, uint8_t data_in_size_bytes, uint8_t* data_out, uint8_t* data_out_size_bytes, uint16_t* data_out_size_bits)
  * \brief Convert a payload buffer using differential encoding.
  * \param[in]   data_in: Input byte array.
- * \param[in]   data_in_size_bits: Input data size in bits.
+ * \param[in]   data_in_size_bytes: Input data size in bytes.
  * \param[out]  data_out: Pointer to the output data.
  * \param[out]  data_out_size_bytes: Pointer to the output data size in bytes.
  * \param[out]  data_out_size_bits: Pointer to the output data size in bits.
  * \retval      Function execution status.
  *******************************************************************/
-SX126X_status_t SX126X_differential_encoding(uint8_t* data_in, uint16_t data_in_size_bits, uint8_t* data_out, uint8_t* data_out_size_bytes, uint16_t* data_out_size_bits);
+SX126X_status_t SX126X_differential_encoding(uint8_t* data_in, uint8_t data_in_size_bytes, uint8_t* data_out, uint8_t* data_out_size_bytes, uint16_t* data_out_size_bits);
 #endif
 
 #ifdef SX126X_DRIVER_TX_ENABLE
@@ -360,13 +459,13 @@ SX126X_status_t SX126X_write_fifo(uint8_t* tx_data, uint8_t tx_data_size);
 
 #ifdef SX126X_DRIVER_RX_ENABLE
 /*!******************************************************************
- * \fn SX126X_status_t SX126X_set_lna_configuration(SX126X_lna_mode_t lna_mode)
+ * \fn SX126X_status_t SX126X_set_lna_mode(SX126X_lna_mode_t lna_mode)
  * \brief Configure SX126X internal LNA.
  * \param[in]   lna_mode: Internal LNA mode.
  * \param[out]  none
  * \retval      Function execution status.
  *******************************************************************/
-SX126X_status_t SX126X_set_lna_configuration(SX126X_lna_mode_t lna_mode);
+SX126X_status_t SX126X_set_lna_mode(SX126X_lna_mode_t lna_mode);
 #endif
 
 #ifdef SX126X_DRIVER_RX_ENABLE

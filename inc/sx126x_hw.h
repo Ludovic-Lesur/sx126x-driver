@@ -37,6 +37,24 @@ SX126X_status_t SX126X_HW_init(void);
 SX126X_status_t SX126X_HW_de_init(void);
 
 /*!******************************************************************
+ * \fn SX126X_status_t SX126X_HW_set_nreset_gpio(uint8_t state)
+ * \brief Set SX126X NRESET pin state.
+ * \param[in]   state: NRESET pin state to apply.
+ * \param[out]  none
+ * \retval      Function execution status.
+ *******************************************************************/
+SX126X_status_t SX126X_HW_set_nreset_gpio(uint8_t state);
+
+/*!******************************************************************
+ * \fn SX126X_status_t SX126X_HW_wait_busy_low(void)
+ * \brief Wait for SX126X BUSY pin to be low.
+ * \param[in]   none.
+ * \param[out]  none
+ * \retval      Function execution status.
+ *******************************************************************/
+SX126X_status_t SX126X_HW_wait_busy_low(void);
+
+/*!******************************************************************
  * \fn SX126X_status_t SX126X_HW_spi_write_read_8(uint8_t* tx_data, uint8_t* rx_data, uint8_t transfer_size)
  * \brief Transfer data to transceiver over SPI interface.
  * \param[in]   tx_data: Byte array to send.
@@ -45,6 +63,15 @@ SX126X_status_t SX126X_HW_de_init(void);
  * \retval      Function execution status.
  *******************************************************************/
 SX126X_status_t SX126X_HW_spi_write_read_8(uint8_t* tx_data, uint8_t* rx_data, uint8_t transfer_size);
+
+/*!******************************************************************
+ * \fn SX126X_status_t SX126X_HW_delay_milliseconds(uint32_t delay_ms)
+ * \brief Delay function.
+ * \param[in]   delay_ms: Delay to wait in ms.
+ * \param[out]  none
+ * \retval      Function execution status.
+ *******************************************************************/
+SX126X_status_t SX126X_HW_delay_milliseconds(uint32_t delay_ms);
 
 #endif /* SX126X_DRIVER_DISABLE */
 
