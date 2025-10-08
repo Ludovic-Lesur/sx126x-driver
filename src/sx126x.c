@@ -20,6 +20,8 @@
 #define SX126X_REGISTER_ADDRESS_BPSK_PACKET 0x00F0
 #define SX126X_REGISTER_ADDRESS_SYNC_WORD   0x06C0
 #define SX126X_REGISTER_ADDRESS_RX_GAIN     0x08AC
+#define SX126X_REGISTER_ADDRESS_TX_CLAMP    0x08D8
+#define SX126X_REGISTER_ADDRESS_OCP         0x08E7
 
 #define SX126X_TCXO_TIMEOUT_DELAY_STEP_NS   15625
 #define SX126X_TCXO_TIMEOUT_MIN_MS          1
@@ -40,9 +42,11 @@
 #ifdef SX126X_DRIVER_DEVICE_SX1262
 #define SX126X_OUTPUT_POWER_MIN             (-9)
 #define SX126X_OUTPUT_POWER_MAX             22
+#define SX126X_OCP_REGISTER_VALUE           0x38
 #else
 #define SX126X_OUTPUT_POWER_MIN             (-17)
 #define SX126X_OUTPUT_POWER_MAX             15
+#define SX126X_OCP_REGISTER_VALUE           0x18
 #endif
 
 /*** SX126X local structures ***/
@@ -155,89 +159,7 @@ typedef enum {
     SX126X_COMMAND_SIZE_CLEAR_DEVICE_ERRORS = 3,
 } SX126X_command_size_t;
 
-/*******************************************************************/
-typedef struct {
-    int8_t power;
-    uint8_t pa_duty_cycle;
-#ifdef SX126X_DRIVER_DEVICE_SX1262
-    uint8_t hp_max;
-#endif
-} SX126X_pa_config_t;
-
 /*** SX126X local global variables ***/
-
-#ifdef SX126X_DRIVER_TX_ENABLE
-static const SX126X_pa_config_t SX126X_PA_CONFIG[SX126X_OUTPUT_POWER_MAX - SX126X_OUTPUT_POWER_MIN + 1] = {
-#ifdef SX126X_DRIVER_DEVICE_SX1262
-    { .power = 3,  .hp_max = 0x01, .pa_duty_cycle = 0x01 },
-    { .power = 4,  .hp_max = 0x01, .pa_duty_cycle = 0x01 },
-    { .power = 7,  .hp_max = 0x01, .pa_duty_cycle = 0x00 },
-    { .power = 7,  .hp_max = 0x01, .pa_duty_cycle = 0x01 },
-    { .power = 9,  .hp_max = 0x01, .pa_duty_cycle = 0x04 },
-    { .power = 10, .hp_max = 0x01, .pa_duty_cycle = 0x00 },
-    { .power = 8,  .hp_max = 0x01, .pa_duty_cycle = 0x03 },
-    { .power = 12, .hp_max = 0x01, .pa_duty_cycle = 0x00 },
-    { .power = 15, .hp_max = 0x01, .pa_duty_cycle = 0x00 },
-    { .power = 14, .hp_max = 0x01, .pa_duty_cycle = 0x01 },
-    { .power = 20, .hp_max = 0x01, .pa_duty_cycle = 0x00 },
-    { .power = 19, .hp_max = 0x01, .pa_duty_cycle = 0x02 },
-    { .power = 20, .hp_max = 0x01, .pa_duty_cycle = 0x01 },
-    { .power = 21, .hp_max = 0x01, .pa_duty_cycle = 0x00 },
-    { .power = 18, .hp_max = 0x02, .pa_duty_cycle = 0x00 },
-    { .power = 22, .hp_max = 0x01, .pa_duty_cycle = 0x00 },
-    { .power = 22, .hp_max = 0x01, .pa_duty_cycle = 0x01 },
-    { .power = 22, .hp_max = 0x01, .pa_duty_cycle = 0x02 },
-    { .power = 22, .hp_max = 0x01, .pa_duty_cycle = 0x03 },
-    { .power = 22, .hp_max = 0x01, .pa_duty_cycle = 0x04 },
-    { .power = 22, .hp_max = 0x02, .pa_duty_cycle = 0x00 },
-    { .power = 22, .hp_max = 0x02, .pa_duty_cycle = 0x01 },
-    { .power = 22, .hp_max = 0x02, .pa_duty_cycle = 0x02 },
-    { .power = 22, .hp_max = 0x02, .pa_duty_cycle = 0x03 },
-    { .power = 22, .hp_max = 0x03, .pa_duty_cycle = 0x01 },
-    { .power = 22, .hp_max = 0x03, .pa_duty_cycle = 0x02 },
-    { .power = 22, .hp_max = 0x05, .pa_duty_cycle = 0x00 },
-    { .power = 22, .hp_max = 0x05, .pa_duty_cycle = 0x01 },
-    { .power = 22, .hp_max = 0x04, .pa_duty_cycle = 0x04 },
-    { .power = 22, .hp_max = 0x06, .pa_duty_cycle = 0x03 },
-    { .power = 22, .hp_max = 0x07, .pa_duty_cycle = 0x03 },
-    { .power = 22, .hp_max = 0x07, .pa_duty_cycle = 0x04 },
-#else
-    { .power = -15, .pa_duty_cycle = 0x01 },
-    { .power = -13, .pa_duty_cycle = 0x00 },
-    { .power = -12, .pa_duty_cycle = 0x00 },
-    { .power = -12, .pa_duty_cycle = 0x01 },
-    { .power = -12, .pa_duty_cycle = 0x03 },
-    { .power = -10, .pa_duty_cycle = 0x02 },
-    { .power = -10, .pa_duty_cycle = 0x04 },
-    { .power = -7,  .pa_duty_cycle = 0x00 },
-    { .power = -8,  .pa_duty_cycle = 0x03 },
-    { .power = -7,  .pa_duty_cycle = 0x03 },
-    { .power = -5,  .pa_duty_cycle = 0x02 },
-    { .power = -4,  .pa_duty_cycle = 0x02 },
-    { .power = -3,  .pa_duty_cycle = 0x02 },
-    { .power = 0,   .pa_duty_cycle = 0x00 },
-    { .power = 0,   .pa_duty_cycle = 0x01 },
-    { .power = 0,   .pa_duty_cycle = 0x02 },
-    { .power = 3,   .pa_duty_cycle = 0x00 },
-    { .power = 3,   .pa_duty_cycle = 0x01 },
-    { .power = 4,   .pa_duty_cycle = 0x01 },
-    { .power = 6,   .pa_duty_cycle = 0x00 },
-    { .power = 6,   .pa_duty_cycle = 0x01 },
-    { .power = 7,   .pa_duty_cycle = 0x01 },
-    { .power = 8,   .pa_duty_cycle = 0x01 },
-    { .power = 9,   .pa_duty_cycle = 0x01 },
-    { .power = 10,  .pa_duty_cycle = 0x01 },
-    { .power = 13,  .pa_duty_cycle = 0x00 },
-    { .power = 14,  .pa_duty_cycle = 0x00 },
-    { .power = 13,  .pa_duty_cycle = 0x01 },
-    { .power = 14,  .pa_duty_cycle = 0x01 },
-    { .power = 14,  .pa_duty_cycle = 0x02 },
-    { .power = 14,  .pa_duty_cycle = 0x04 },
-    { .power = 14,  .pa_duty_cycle = 0x05 },
-    { .power = 14,  .pa_duty_cycle = 0x07 },
-#endif
-};
-#endif
 
 #ifdef SX126X_DRIVER_RX_ENABLE
 static const uint8_t SX126X_RXBW[SX126X_RXBW_LAST] = { 0x1F, 0x17, 0x0F, 0x1E, 0x16, 0x0E, 0x1D, 0x15, 0x0D, 0x1C, 0x14, 0x0C, 0x1B, 0x13, 0x0B, 0x1A, 0x12, 0x0A, 0x19, 0x11, 0x09 };
@@ -275,7 +197,7 @@ errors:
     return status;
 }
 
-#if (0)
+#ifdef SX126X_DRIVER_DEVICE_SX1262
 /*******************************************************************/
 static SX126X_status_t _SX126X_read_register(uint16_t register_address, uint8_t* value) {
     // Local variables.
@@ -784,14 +706,14 @@ SX126X_status_t SX126X_set_rf_output_power(int8_t rf_output_power_dbm, SX126X_pa
     // Local variables.
     SX126X_status_t status = SX126X_SUCCESS;
 #ifdef SX126X_DRIVER_DEVICE_SX1262
-    uint8_t command_pa_config[SX126X_COMMAND_SIZE_SET_PA_CONFIG] = { SX126X_OP_CODE_SET_PA_CONFIG, 0x00, 0x00, 0x00, 0x01 };
+    uint8_t command_pa_config[SX126X_COMMAND_SIZE_SET_PA_CONFIG] = { SX126X_OP_CODE_SET_PA_CONFIG, 0x04, 0x07, 0x00, 0x01 };
+    uint8_t reg_value  = 0;
 #else
-    uint8_t command_pa_config[SX126X_COMMAND_SIZE_SET_PA_CONFIG] = { SX126X_OP_CODE_SET_PA_CONFIG, 0x00, 0x00, 0x01, 0x01 };
+    uint8_t command_pa_config[SX126X_COMMAND_SIZE_SET_PA_CONFIG] = { SX126X_OP_CODE_SET_PA_CONFIG, 0x04, 0x00, 0x01, 0x01 };
 #endif
     uint8_t data_pa_config[SX126X_COMMAND_SIZE_SET_PA_CONFIG];
-    uint8_t command_tx_params[SX126X_COMMAND_SIZE_SET_TX_PARAMS] = { SX126X_OP_CODE_SET_TX_PARAMS, 0x00, 0x00 };
+    uint8_t command_tx_params[SX126X_COMMAND_SIZE_SET_TX_PARAMS] = { SX126X_OP_CODE_SET_TX_PARAMS, (uint8_t) (rf_output_power_dbm), (uint8_t) (pa_ramp_time) };
     uint8_t data_tx_params[SX126X_COMMAND_SIZE_SET_TX_PARAMS];
-    uint8_t lut_index = 0;
     // Check parameters.
     if (rf_output_power_dbm > SX126X_OUTPUT_POWER_MAX) {
         status = SX126X_ERROR_RF_OUTPUT_POWER_OVERFLOW;
@@ -805,19 +727,26 @@ SX126X_status_t SX126X_set_rf_output_power(int8_t rf_output_power_dbm, SX126X_pa
         status = SX126X_ERROR_PA_RAMP_TIME;
         goto errors;
     }
-    // Compute LUT index.
-    lut_index = (uint8_t) (rf_output_power_dbm - SX126X_OUTPUT_POWER_MIN);
     // Compute PA parameters.
-    command_pa_config[1] = SX126X_PA_CONFIG[lut_index].pa_duty_cycle;
 #ifdef SX126X_DRIVER_DEVICE_SX1262
-    command_pa_config[2] = SX126X_PA_CONFIG[lut_index].hp_max;
+    // Improve clamp configuration.
+    status = _SX126X_read_register(SX126X_REGISTER_ADDRESS_TX_CLAMP, &reg_value);
+    if (status != SX126X_SUCCESS) goto errors;
+    reg_value |= 0x1E;
+    status = _SX126X_write_register(SX126X_REGISTER_ADDRESS_TX_CLAMP, reg_value);
+    if (status != SX126X_SUCCESS) goto errors;
+#else
+    if (rf_output_power_dbm > 14) {
+        command_pa_config[1] = 0x06;
+    }
 #endif
-    // Compute TX parameters.
-    command_tx_params[1] = (uint8_t) (SX126X_PA_CONFIG[lut_index].power);
-    command_tx_params[2] = (uint8_t) (pa_ramp_time);
-    // Send commands.
+    // Set PA configuration.
     status = _SX126X_spi_write_read_8(command_pa_config, data_pa_config, SX126X_COMMAND_SIZE_SET_PA_CONFIG);
     if (status != SX126X_SUCCESS) goto errors;
+    // Set OCP value.
+    status = _SX126X_write_register(SX126X_REGISTER_ADDRESS_OCP, SX126X_OCP_REGISTER_VALUE);
+    if (status != SX126X_SUCCESS) goto errors;
+    // Set TX parameters.
     status = _SX126X_spi_write_read_8(command_tx_params, data_tx_params, SX126X_COMMAND_SIZE_SET_TX_PARAMS);
     if (status != SX126X_SUCCESS) goto errors;
 errors:
