@@ -550,8 +550,8 @@ SX126X_status_t SX126X_set_modulation(SX126X_modulation_parameters_t* modulation
     command[5] = SX126X_RXBW[modulation_parameters->rx_bandwidth];
 #endif
     // Deviation.
-    tmp_u64 = ((uint64_t) (modulation_parameters->fsk_deviation_hz)) * ((uint64_t) SX126X_DRIVER_FXOSC_HZ);
-    tmp_u64 <<= 25;
+    tmp_u64 = (((uint64_t) (modulation_parameters->fsk_deviation_hz)) << 25);
+    tmp_u64 /= ((uint64_t) SX126X_DRIVER_FXOSC_HZ);
     command[6] = (uint8_t) (tmp_u64 >> 16);
     command[7] = (uint8_t) (tmp_u64 >> 8);
     command[8] = (uint8_t) (tmp_u64 >> 0);
