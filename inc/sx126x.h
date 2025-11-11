@@ -84,7 +84,7 @@ typedef enum {
  * \brief SX126X external oscillator type.
  *******************************************************************/
 typedef enum {
-    SX126X_OSCILLATOR_QUARTZ = 0x00,
+    SX126X_OSCILLATOR_QUARTZ = 0,
     SX126X_OSCILLATOR_TCXO,
     SX126X_OSCILLATOR_LAST
 } SX126X_oscillator_t;
@@ -110,7 +110,7 @@ typedef enum {
  * \brief SX126X transceiver modes.
  *******************************************************************/
 typedef enum {
-    SX126X_MODE_SLEEP,
+    SX126X_MODE_SLEEP = 0,
     SX126X_MODE_STANDBY_RC,
     SX126X_MODE_STANDBY_XOSC,
     SX126X_MODE_FS,
@@ -125,7 +125,7 @@ typedef enum {
  * \brief SX126X modulations list.
  *******************************************************************/
 typedef enum {
-    SX126X_MODULATION_GFSK,
+    SX126X_MODULATION_GFSK = 0,
     SX126X_MODULATION_BPSK,
     SX126X_MODULATION_LAST
 } SX126X_modulation_t;
@@ -135,7 +135,7 @@ typedef enum {
  * \brief SX126X modulations shaping list.
  *******************************************************************/
 typedef enum {
-    SX126X_MODULATION_SHAPING_NONE,
+    SX126X_MODULATION_SHAPING_NONE = 0,
     SX126X_MODULATION_SHAPING_GAUSSIAN_BT_03,
     SX126X_MODULATION_SHAPING_GAUSSIAN_BT_05,
     SX126X_MODULATION_SHAPING_GAUSSIAN_BT_07,
@@ -149,7 +149,7 @@ typedef enum {
  * \brief SX126X RX bandwidth values.
  *******************************************************************/
 typedef enum {
-    SX126X_RXBW_4800HZ,
+    SX126X_RXBW_4800HZ = 0,
     SX126X_RXBW_5800HZ,
     SX126X_RXBW_7300HZ,
     SX126X_RXBW_9700HZ,
@@ -235,7 +235,7 @@ typedef enum {
  * \brief SX126X RSSI measurement methods.
  *******************************************************************/
 typedef enum {
-    SX126X_RSSI_TYPE_INSTANTANEOUS,
+    SX126X_RSSI_TYPE_INSTANTANEOUS = 0,
     SX126X_RSSI_TYPE_SYNC_WORD,
     SX126X_RSSI_TYPE_AVERAGED,
     SX126X_RSSI_TYPE_LAST
