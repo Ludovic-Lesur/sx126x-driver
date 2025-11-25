@@ -459,6 +459,17 @@ SX126X_status_t SX126X_write_fifo(uint8_t* tx_data, uint8_t tx_data_size);
 
 #ifdef SX126X_DRIVER_RX_ENABLE
 /*!******************************************************************
+ * \fn SX126X_status_t SX126X_set_agc_afc_configuration(void)
+ * \brief Configure SX126X internal AGC and AFC.
+ * \param[in]   none
+ * \param[out]  none
+ * \retval      Function execution status.
+ *******************************************************************/
+SX126X_status_t SX126X_set_agc_afc_configuration(void);
+#endif
+
+#ifdef SX126X_DRIVER_RX_ENABLE
+/*!******************************************************************
  * \fn SX126X_status_t SX126X_set_lna_mode(SX126X_lna_mode_t lna_mode)
  * \brief Configure SX126X internal LNA.
  * \param[in]   lna_mode: Internal LNA mode.

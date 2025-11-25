@@ -17,36 +17,41 @@
 
 /*** SX126X local macros ***/
 
-#define SX126X_REGISTER_ADDRESS_BPSK_PACKET 0x00F0
-#define SX126X_REGISTER_ADDRESS_SYNC_WORD   0x06C0
-#define SX126X_REGISTER_ADDRESS_RX_GAIN     0x08AC
-#define SX126X_REGISTER_ADDRESS_TX_CLAMP    0x08D8
-#define SX126X_REGISTER_ADDRESS_OCP         0x08E7
+#define SX126X_REGISTER_ADDRESS_BPSK_PACKET     0x00F0
+#define SX126X_REGISTER_ADDRESS_GBSYNCR         0x06AC
+#define SX126X_REGISTER_ADDRESS_SYNC_WORD       0x06C0
+#define SX126X_REGISTER_ADDRESS_GAFCR           0x06D1
+#define SX126X_REGISTER_ADDRESS_RX_GAIN         0x08AC
+#define SX126X_REGISTER_ADDRESS_AGCRSSICTL0R    0x089B
+#define SX126X_REGISTER_ADDRESS_AGCGFORSTCFGR   0x08B8
+#define SX126X_REGISTER_ADDRESS_AGCGFORSTPOWTHR 0x08B9
+#define SX126X_REGISTER_ADDRESS_TX_CLAMP        0x08D8
+#define SX126X_REGISTER_ADDRESS_OCP             0x08E7
 
-#define SX126X_TCXO_TIMEOUT_DELAY_STEP_NS   15625
-#define SX126X_TCXO_TIMEOUT_MIN_MS          1
-#define SX126X_TCXO_TIMEOUT_MAX_MS          262000
+#define SX126X_TCXO_TIMEOUT_DELAY_STEP_NS       15625
+#define SX126X_TCXO_TIMEOUT_MIN_MS              1
+#define SX126X_TCXO_TIMEOUT_MAX_MS              262000
 
-#define SX126X_BPSK_PACKET_REGISTER_SIZE    6
+#define SX126X_BPSK_PACKET_REGISTER_SIZE        6
 
-#define SX126X_MODE_COMMAND_SIZE            4
+#define SX126X_MODE_COMMAND_SIZE                4
 
-#define SX126X_BIT_RATE_BPS_MIN             70
-#define SX126X_BIT_RATE_BPS_MAX             500000
+#define SX126X_BIT_RATE_BPS_MIN                 70
+#define SX126X_BIT_RATE_BPS_MAX                 500000
 
-#define SX126X_RF_FREQUENCY_HZ_MIN          150000000
-#define SX126X_RF_FREQUENCY_HZ_MAX          960000000
+#define SX126X_RF_FREQUENCY_HZ_MIN              150000000
+#define SX126X_RF_FREQUENCY_HZ_MAX              960000000
 
-#define SX126X_IMAGE_CALIBRATION_STEP_MHZ   4
+#define SX126X_IMAGE_CALIBRATION_STEP_MHZ       4
 
 #ifdef SX126X_DRIVER_DEVICE_SX1262
-#define SX126X_OUTPUT_POWER_MIN             (-9)
-#define SX126X_OUTPUT_POWER_MAX             22
-#define SX126X_OCP_REGISTER_VALUE           0x38
+#define SX126X_OUTPUT_POWER_MIN                 (-9)
+#define SX126X_OUTPUT_POWER_MAX                 22
+#define SX126X_OCP_REGISTER_VALUE               0x38
 #else
-#define SX126X_OUTPUT_POWER_MIN             (-17)
-#define SX126X_OUTPUT_POWER_MAX             15
-#define SX126X_OCP_REGISTER_VALUE           0x18
+#define SX126X_OUTPUT_POWER_MIN                 (-17)
+#define SX126X_OUTPUT_POWER_MAX                 15
+#define SX126X_OCP_REGISTER_VALUE               0x18
 #endif
 
 /*** SX126X local structures ***/
@@ -197,7 +202,7 @@ errors:
     return status;
 }
 
-#ifdef SX126X_DRIVER_DEVICE_SX1262
+#if ((defined SX126X_DRIVER_DEVICE_SX1262) || (defined SX126X_DRIVER_RX_ENABLE))
 /*******************************************************************/
 static SX126X_status_t _SX126X_read_register(uint16_t register_address, uint8_t* value) {
     // Local variables.
@@ -830,6 +835,47 @@ SX126X_status_t SX126X_write_fifo(uint8_t* tx_data, uint8_t tx_data_size) {
     }
     // Send command.
     status = _SX126X_spi_write_read_8(command, data, (SX126X_COMMAND_SIZE_WRITE_BUFFER + tx_data_size));
+    if (status != SX126X_SUCCESS) goto errors;
+errors:
+    return status;
+}
+#endif
+
+#ifdef SX126X_DRIVER_RX_ENABLE
+/*******************************************************************/
+SX126X_status_t SX126X_set_agc_afc_configuration(void) {
+    // Local variables.
+    SX126X_status_t status = SX126X_SUCCESS;
+    uint8_t reg_value = 0x00;
+    // GFO reset.
+    status = _SX126X_read_register(SX126X_REGISTER_ADDRESS_AGCGFORSTCFGR, &reg_value);
+    if (status != SX126X_SUCCESS) goto errors;
+    reg_value &= 0xEF;
+    status = _SX126X_write_register(SX126X_REGISTER_ADDRESS_AGCGFORSTCFGR, reg_value);
+    if (status != SX126X_SUCCESS) goto errors;
+    // CFO reset threshold.
+    status = _SX126X_write_register(SX126X_REGISTER_ADDRESS_AGCGFORSTPOWTHR, 0x04);
+    if (status != SX126X_SUCCESS) goto errors;
+    // AGC stability.
+    status = _SX126X_read_register(SX126X_REGISTER_ADDRESS_AGCRSSICTL0R, &reg_value);
+    if (status != SX126X_SUCCESS) goto errors;
+    reg_value &= 0xE3;
+    reg_value |= (0b010 << 2);
+    status = _SX126X_write_register(SX126X_REGISTER_ADDRESS_AGCRSSICTL0R, reg_value);
+    if (status != SX126X_SUCCESS) goto errors;
+    // AFC.
+    status = _SX126X_read_register(SX126X_REGISTER_ADDRESS_GAFCR, &reg_value);
+    if (status != SX126X_SUCCESS) goto errors;
+    reg_value &= 0xE7;
+    reg_value |= (0b011 << 3);
+    status = _SX126X_write_register(SX126X_REGISTER_ADDRESS_GAFCR, reg_value);
+    if (status != SX126X_SUCCESS) goto errors;
+    // Bit synchronizer.
+    status = _SX126X_read_register(SX126X_REGISTER_ADDRESS_GBSYNCR, &reg_value);
+    if (status != SX126X_SUCCESS) goto errors;
+    reg_value &= 0x8F;
+    reg_value |= (0b101 << 4);
+    status = _SX126X_write_register(SX126X_REGISTER_ADDRESS_GBSYNCR, reg_value);
     if (status != SX126X_SUCCESS) goto errors;
 errors:
     return status;
