@@ -283,7 +283,7 @@ SX126X_status_t SX126X_get_device_errors(uint16_t* op_error) {
         goto errors;
     }
     // Send command.
-    status = _SX126X_spi_write_read_8(command, data, SX126X_COMMAND_SIZE_SET_REGULATOR_MODE);
+    status = _SX126X_spi_write_read_8(command, data, SX126X_COMMAND_SIZE_GET_DEVICE_ERRORS);
     if (status != SX126X_SUCCESS) goto errors;
     // Update data.
     (*op_error) = (uint16_t) ((data[2] << 8) + data[3]);
@@ -867,7 +867,7 @@ SX126X_status_t SX126X_set_agc_afc_configuration(void) {
     status = _SX126X_read_register(SX126X_REGISTER_ADDRESS_GAFCR, &reg_value);
     if (status != SX126X_SUCCESS) goto errors;
     reg_value &= 0xE7;
-    reg_value |= (0b011 << 3);
+    reg_value |= (0b11 << 3);
     status = _SX126X_write_register(SX126X_REGISTER_ADDRESS_GAFCR, reg_value);
     if (status != SX126X_SUCCESS) goto errors;
     // Bit synchronizer.
