@@ -39,18 +39,11 @@
 #define SX126X_BIT_RATE_BPS_MIN                 70
 #define SX126X_BIT_RATE_BPS_MAX                 500000
 
-#define SX126X_RF_FREQUENCY_HZ_MIN              150000000
-#define SX126X_RF_FREQUENCY_HZ_MAX              960000000
-
 #define SX126X_IMAGE_CALIBRATION_STEP_MHZ       4
 
 #ifdef SX126X_DRIVER_DEVICE_SX1262
-#define SX126X_OUTPUT_POWER_MIN                 (-9)
-#define SX126X_OUTPUT_POWER_MAX                 22
 #define SX126X_OCP_REGISTER_VALUE               0x38
 #else
-#define SX126X_OUTPUT_POWER_MIN                 (-17)
-#define SX126X_OUTPUT_POWER_MAX                 15
 #define SX126X_OCP_REGISTER_VALUE               0x18
 #endif
 
