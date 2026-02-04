@@ -736,6 +736,7 @@ SX126X_status_t SX126X_set_rf_output_power(int8_t rf_output_power_dbm, SX126X_pa
 #else
     if (rf_output_power_dbm > 14) {
         command_pa_config[1] = 0x06;
+        command_tx_params[1] = 14;
     }
 #endif
     // Set PA configuration.
