@@ -1,0 +1,23 @@
+/*
+ * sx126x_driver_flags.h
+ *
+ *  Created on: 14 sep. 2025
+ *      Author: Ludo
+ */
+
+#ifndef __SX126X_DRIVER_FLAGS_H__
+#define __SX126X_DRIVER_FLAGS_H__
+
+/*** SX126X driver compilation flags ***/
+
+#cmakedefine SX126X_DRIVER_SPI_ERROR_BASE_LAST      @SX126X_DRIVER_SPI_ERROR_BASE_LAST@
+#cmakedefine SX126X_DRIVER_DELAY_ERROR_BASE_LAST    @SX126X_DRIVER_SPI_ERROR_BASE_LAST@
+
+#cmakedefine SX126X_DRIVER_DEVICE_SX1262
+
+#cmakedefine SX126X_DRIVER_FXOSC_HZ                 @SX126X_DRIVER_FXOSC_HZ@
+
+#cmakedefine SX126X_DRIVER_TX_ENABLE
+#cmakedefine SX126X_DRIVER_RX_ENABLE
+
+#endif /* __SX126X_DRIVER_FLAGS_H__ */

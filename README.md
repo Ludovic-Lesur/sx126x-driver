@@ -26,7 +26,29 @@ Here is the versions compatibility table:
 | `SX126X_DRIVER_DISABLE_FLAGS_FILE` | `defined` / `undefined` | Disable the `sx126x_driver_flags.h` header file inclusion when compilation flags are given in the project settings or by command line. |
 | `SX126X_DRIVER_DISABLE` | `defined` / `undefined` | Disable the SX126X driver. |
 | `SX126X_DRIVER_SPI_ERROR_BASE_LAST` | `<value>` | Last error base of the low level SPI driver. |
+| `SX126X_DRIVER_DELAY_ERROR_BASE_LAST` | `<value>` | Last error base of the low level delay driver. |
 | `SX126X_DRIVER_DEVICE_SX1262` | `defined` / `undefined` | Select SX1262 chip if defined, SX1261 otherwise. |
 | `SX126X_DRIVER_FXOSC_HZ` | `<value>` | Oscillator frequency in Hz. |
 | `SX126X_DRIVER_TX_ENABLE` | `defined` / `undefined` | Enable radio transmission functions. |
 | `SX126X_DRIVER_RX_ENABLE` | `defined` / `undefined` | Enable radio reception functions. |
+
+# Build
+
+A static library can be compiled by command line with `cmake`.
+
+```bash
+mkdir build
+cd build
+cmake -DCMAKE_TOOLCHAIN_FILE="<toolchain_file_path>" \
+      -DTOOLCHAIN_PATH="<arm-none-eabi-gcc_path>" \
+      -DTYPES_PATH="<types_file_path>" \
+      -DEMBEDDED_UTILS_PATH="<embedded-utils_path>" \
+      -DSX126X_DRIVER_SPI_ERROR_BASE_LAST=0 \
+      -DSX126X_DRIVER_DELAY_ERROR_BASE_LAST=0 \
+      -DSX126X_DRIVER_DEVICE_SX1262=OFF \
+      -DSX126X_DRIVER_FXOSC_HZ=32000000 \
+      -DSX126X_DRIVER_TX_ENABLE=ON \
+      -DSX126X_DRIVER_RX_ENABLE=ON \
+      -G "Unix Makefiles" ..
+make all
+```
