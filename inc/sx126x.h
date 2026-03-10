@@ -20,11 +20,11 @@
 #define SX126X_RF_FREQUENCY_HZ_MAX              960000000
 
 #ifdef SX126X_DRIVER_DEVICE_SX1262
-#define SX126X_OUTPUT_POWER_MIN                 (-9)
-#define SX126X_OUTPUT_POWER_MAX                 22
+#define SX126X_RF_OUTPUT_POWER_DBM_MIN          (-9)
+#define SX126X_RF_OUTPUT_POWER_DBM_MAX          22
 #else
-#define SX126X_OUTPUT_POWER_MIN                 (-17)
-#define SX126X_OUTPUT_POWER_MAX                 15
+#define SX126X_RF_OUTPUT_POWER_DBM_MIN          (-17)
+#define SX126X_RF_OUTPUT_POWER_DBM_MAX          15
 #endif
 
 #define SX126X_EXIT_RESET_DELAY_MS              50

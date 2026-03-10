@@ -713,11 +713,11 @@ SX126X_status_t SX126X_set_rf_output_power(int8_t rf_output_power_dbm, SX126X_pa
     uint8_t command_tx_params[SX126X_COMMAND_SIZE_SET_TX_PARAMS] = { SX126X_OP_CODE_SET_TX_PARAMS, (uint8_t) (rf_output_power_dbm), (uint8_t) (pa_ramp_time) };
     uint8_t data_tx_params[SX126X_COMMAND_SIZE_SET_TX_PARAMS];
     // Check parameters.
-    if (rf_output_power_dbm > SX126X_OUTPUT_POWER_MAX) {
+    if (rf_output_power_dbm > SX126X_RF_OUTPUT_POWER_DBM_MAX) {
         status = SX126X_ERROR_RF_OUTPUT_POWER_OVERFLOW;
         goto errors;
     }
-    if (rf_output_power_dbm < SX126X_OUTPUT_POWER_MIN) {
+    if (rf_output_power_dbm < SX126X_RF_OUTPUT_POWER_DBM_MIN) {
         status = SX126X_ERROR_RF_OUTPUT_POWER_UNDERFLOW;
         goto errors;
     }
