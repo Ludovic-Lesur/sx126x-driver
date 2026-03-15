@@ -34,8 +34,6 @@
 
 #define SX126X_BPSK_PACKET_REGISTER_SIZE        6
 
-#define SX126X_MODE_COMMAND_SIZE                4
-
 #define SX126X_BIT_RATE_BPS_MIN                 70
 #define SX126X_BIT_RATE_BPS_MAX                 500000
 
@@ -397,8 +395,8 @@ errors:
 SX126X_status_t SX126X_set_mode(SX126X_mode_t mode) {
     // Local variables.
     SX126X_status_t status = SX126X_SUCCESS;
-    uint8_t command[SX126X_MODE_COMMAND_SIZE] = { SX126X_OP_CODE_NOP, 0x00, 0x00, 0x00 };
-    uint8_t data[SX126X_MODE_COMMAND_SIZE];
+    uint8_t command[SX126X_COMMAND_SIZE_SET_TX] = { SX126X_OP_CODE_NOP, 0x00, 0x00, 0x00 };
+    uint8_t data[SX126X_COMMAND_SIZE_SET_TX];
     uint8_t command_size = 0;
     // Compute register.
     switch (mode) {
