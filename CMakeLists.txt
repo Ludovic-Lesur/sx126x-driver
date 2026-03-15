@@ -31,6 +31,7 @@ if(${BUILD_MODE} STREQUAL STATIC)
     
     # Compilation flags.
     add_compilation_flag(SX126X_DRIVERS_DISABLE "Disable the SX126X driver." OFF)
+    add_compilation_flag(SX126X_DRIVER_GPIO_ERROR_BASE_LAST "Last error base of the low level GPIO driver." 0)
     add_compilation_flag(SX126X_DRIVER_SPI_ERROR_BASE_LAST "Last error base of the low level SPI driver." 0)
     add_compilation_flag(SX126X_DRIVER_DELAY_ERROR_BASE_LAST "Last error base of the low level delay driver." 0)
     add_compilation_flag(SX126X_DRIVER_DEVICE_SX1262 "Select SX1262 chip if defined, SX1261 otherwise." OFF)
