@@ -167,6 +167,7 @@ static const uint8_t SX126X_RXBW[SX126X_RXBW_LAST] = { 0x1F, 0x17, 0x0F, 0x1E, 0
 static SX126X_status_t _SX126X_spi_write_read_8(uint8_t* tx_data, uint8_t* rx_data, uint8_t transfer_size) {
     // Local variables.
     SX126X_status_t status = SX126X_SUCCESS;
+    uint8_t command_status = 0;
     // Wait for BUSY line to be low.
     status = SX126X_HW_wait_busy_low();
     if (status != SX126X_SUCCESS) {
@@ -176,6 +177,15 @@ static SX126X_status_t _SX126X_spi_write_read_8(uint8_t* tx_data, uint8_t* rx_da
     // Perform SPI transfer.
     status = SX126X_HW_spi_write_read_8(tx_data, rx_data, transfer_size);
     if (status != SX126X_SUCCESS) goto errors;
+    // Status bits are only sent when the command has parameters.
+    if (transfer_size > 1) {
+        // Check if command has been successfully executed.
+        command_status = ((rx_data[1] >> 1) & 0x07);
+        if ((command_status == 0x03) || (command_status == 0x04) || (command_status == 0x05)) {
+            status = SX126X_ERROR_COMMAND_EXECUTION;
+            goto errors;
+        }
+    }
 errors:
     return status;
 }
