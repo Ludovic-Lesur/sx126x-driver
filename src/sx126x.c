@@ -170,10 +170,7 @@ static SX126X_status_t _SX126X_spi_write_read_8(uint8_t* tx_data, uint8_t* rx_da
     uint8_t command_status = 0;
     // Wait for BUSY line to be low.
     status = SX126X_HW_wait_busy_low();
-    if (status != SX126X_SUCCESS) {
-        status = SX126X_ERROR_BUSY_TIMEOUT;
-        goto errors;
-    }
+    if (status != SX126X_SUCCESS) goto errors;
     // Perform SPI transfer.
     status = SX126X_HW_spi_write_read_8(tx_data, rx_data, transfer_size);
     if (status != SX126X_SUCCESS) goto errors;
@@ -262,6 +259,12 @@ SX126X_status_t SX126X_reset(uint8_t reset_enable) {
         // Wait for reset time.
         status = SX126X_HW_delay_milliseconds(SX126X_EXIT_RESET_DELAY_MS);
         if (status != SX126X_SUCCESS) goto errors;
+        // Ensure chip is ready after the delay.
+        status = SX126X_HW_wait_busy_low();
+        if (status != SX126X_SUCCESS) {
+            status = SX126X_ERROR_RESET_TIMEOUT;
+            goto errors;
+        }
     }
     else {
         // Put NRESET low.
